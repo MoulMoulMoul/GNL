@@ -17,7 +17,6 @@ int		count_line(char *str);
 char	*cut_line(char *bufferleft);
 char	*new_buff(char *bufferleft);
 void	*ft_calloc(size_t n);
-
 size_t	ft_strlen(const char *str);
 
 #endif
