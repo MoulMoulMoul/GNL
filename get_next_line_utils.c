@@ -28,10 +28,10 @@ int	ft_strchr(char *str, char c)
 {
 	int	i;
 
-	i = -1;
+	i = 0;
 	if (!str)
 		return (0);
-	while (str[++i])
+	while (str[i++])
 		if (str[i] == c)
 			return (1);
 	return (0);
@@ -59,14 +59,13 @@ char	*ft_strjoin(char *s1, char *s2)
 	if (!res)
 		return (NULL);
 	i = 0;
-	j = -1;
+	j = 0;
 	if (s1 != NULL)
 	{
-		while (s1[++j])
+		while (s1[j++])
 			res[j] = s1[j];
 	}
-	else
-		j = 0;
+	j = 0;
 	i = 0;
 	while (s2[i])
 		res[j++] = s2[i++];
