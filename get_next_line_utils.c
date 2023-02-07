@@ -12,64 +12,64 @@
 
 #include "get_next_line.h"
 
-size_t	ft_strlen(const char *str)
+size_t	ft_strlen(const char *s)
 {
 	size_t	i;
 
-	if (str == NULL)
-		return (0);
 	i = 0;
-	while (str[i])
+	while (s[i] != '\0')
 		i++;
 	return (i);
 }
 
-int	ft_strchr(char *str, char c)
+static char	*ft_strcat(char *dst, const char *src)
 {
-	int	i;
+	char	*start;
 
-	i = 0;
-	if (!str)
-		return (0);
-	while (str[i++])
-		if (str[i] == c)
-			return (1);
-	return (0);
+	start = dst;
+	while (*start)
+		start++;
+	while (*src)
+		*start++ = *src++;
+	*start = 0;
+	return (dst);
 }
 
-int	count_line(char *str)
+void	ft_strjoin(char **line, const char *s1, int bufsize)
 {
-	int	i;
-
-	i = 0;
-	while (str[i] && str[i] != '\n')
-		i++;
-	return (i);
-}
-
-char	*ft_strjoin(char *s1, char *s2)
-{
-	int		i;
-	int		j;
 	char	*res;
-	size_t	lens1;
 
-	lens1 = ft_strlen(s1);
-	res = malloc(sizeof(char) * (lens1 + ft_strlen(s2)) + 1);
-	if (!res)
-		return (NULL);
-	i = 0;
-	j = 0;
-	if (s1 != NULL)
+	if (bufsize <= 0)
+		return ;
+	if (*line)
 	{
-		while (s1[j++])
-			res[j] = s1[j];
+		res = malloc(bufsize + ft_strlen(*line) + 1);
+		if (res)
+		{
+			*res = 0;
+			ft_strcat(res, *line);
+			ft_strcat(res, s1);
+			free(*line);
+			*line = res;
+		}
+		return ;
 	}
-	j = 0;
-	i = 0;
-	while (s2[i])
-		res[j++] = s2[i++];
-	res[j] = '\0';
-	free(s1);
-	return (res);
+	*line = malloc(bufsize + 1);
+	if (*line)
+	{
+		**line = 0;
+		ft_strcat(*line, s1);
+	}
+}
+
+const char	*ft_strchr(const char *s, int c)
+{
+	char	ch;
+
+	ch = (char)c;
+	while (*s && *s != ch)
+		s++;
+	if (*s == ch)
+		return (s);
+	return (NULL);
 }

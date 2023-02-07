@@ -12,92 +12,73 @@
 
 #include "get_next_line.h"
 
-char	*fill_buffer(char *bufferleft, int fd)
+static char	*ft_strndup(const char *s1, int len)
 {
-	char	*temp;
-	int		reader;
+	char	*res;
+	int		size;
+	int		i;
 
-	temp = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!temp)
-		return (NULL);
-	reader = 1;
-	while (reader != 0 && !ft_strchr(bufferleft, '\n'))
-	{
-		reader = read(fd, temp, BUFFER_SIZE);
-		if (reader < 0)
-		{
-			free(temp);
-			return (NULL);
-		}
-		temp[reader] = 0;
-		bufferleft = ft_strjoin(bufferleft, temp);
-	}
-	free(temp);
-	return (bufferleft);
+	size = len;
+	if (size == -1)
+		size = ft_strlen(s1);
+	res = malloc(size + 1);
+	if (!res)
+		return (res);
+	i = -1;
+	while (s1[++i] && i < size)
+		res[i] = s1[i];
+	res[i] = 0;
+	return (res);
 }
 
-char	*cut_line(char *bufferleft)
+char	*newline_exist(char **line, int lastline)
 {
-	int		i;
-	char	*newline;
+	const char	*endl;
+	char		*res;
+	char		*tmp;
 
-	i = 0;
-	if (!bufferleft[i])
-		return (NULL);
-	newline = malloc(sizeof(char *) * (count_line(bufferleft) + 2));
-	if (!newline)
-		return (NULL);
-	while (bufferleft[i] && bufferleft[i] != '\n')
+	if (!*line)
+		return (*line);
+	tmp = NULL;
+	endl = ft_strchr(*line, '\n');
+	if (endl && !lastline)
 	{
-		newline[i] = bufferleft[i];
-		i++;
+		tmp = ft_strndup(endl + 1, -1);
+		res = ft_strndup(*line, (endl - *line) + 1);
+		free(*line);
+		*line = tmp;
+		return (res);
 	}
-	if (bufferleft[i] == '\n')
-		newline[i++] = '\n';
-	newline[i] = 0;
-	return (newline);
-}
-
-char	*new_buff(char *bufferleft)
-{
-	int		i;
-	int		j;
-	char	*newbuff;
-
-	i = 0;
-	j = 0;
-	while (bufferleft[i] && bufferleft[i] != '\n')
-		i++;
-	if (!bufferleft[i])
+	if (lastline && **line && !endl)
+		tmp = ft_strndup(*line, -1);
+	if (tmp || (*line && !**line))
 	{
-		free(bufferleft);
-		bufferleft = NULL;
-		return (NULL);
+		free(*line);
+		*line = NULL;
 	}
-	newbuff = malloc(sizeof(char *) * (ft_strlen(bufferleft) - i + 1));
-	if (!newbuff)
-		return (NULL);
-	while (bufferleft[i])
-		newbuff[j++] = bufferleft[++i];
-	newbuff[j] = 0;
-	free(bufferleft);
-	return (newbuff);
+	return (tmp);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*bufferleft;
-	char		*line;
+	static char	*line;
+	char		*res;
+	char		buff[BUFFER_SIZE + 1];
+	int			ret;
 
-    if (BUFFER_SIZE < 0 || fd < 0 || read(fd, NULL, 0) < 0)
+	if (fd < 3 && fd != 0)
 		return (NULL);
-	bufferleft = fill_buffer(bufferleft, fd);
-	if (bufferleft == NULL)
+	ret = 1;
+	while (ret)
 	{
-		free(bufferleft);
-		return (NULL);
+		ret = read(fd, buff, BUFFER_SIZE);
+		if (ret < 0)
+			return (NULL);
+		buff[ret] = 0;
+		ft_strjoin(&line, buff, ret);
+		res = newline_exist(&line, 0);
+		if (res)
+			return (res);
 	}
-	line = cut_line(bufferleft);
-	bufferleft = new_buff(bufferleft);
-	return (line);
+	return (newline_exist(&line, 1));
 }
