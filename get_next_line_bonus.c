@@ -12,8 +12,6 @@
 
 #include "get_next_line_bonus.h"
 
-#include "get_next_line_bonus.h"
-
 char	**create_buffer(char **buffer, int fd)
 {
 	int		size;
