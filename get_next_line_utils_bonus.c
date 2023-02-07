@@ -10,66 +10,112 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
-size_t	ft_strlen(const char *s)
+char	*ft_strchr(const char *s, int c)
 {
-	size_t	i;
-
-	i = 0;
-	while (s[i] != '\0')
-		i++;
-	return (i);
+	while (*s && *s != (char)c)
+		s++;
+	if ((char)*s == (char)c)
+		return ((char *)s);
+	return (NULL);
 }
 
-static char	*ft_strcat(char *dst, const char *src)
-{
-	char	*start;
-
-	start = dst;
-	while (*start)
-		start++;
-	while (*src)
-		*start++ = *src++;
-	*start = 0;
-	return (dst);
-}
-
-void	ft_strjoin(char **line, const char *s1, int bufsize)
+char	*ft_strdupcpy(char *d1, char *s1, char *s2, int n)
 {
 	char	*res;
+	int		i;
 
-	if (bufsize <= 0)
-		return ;
-	if (*line)
+	i = -1;
+	if (!s2)
 	{
-		res = malloc(bufsize + ft_strlen(*line) + 1);
+		while ((++i < n && n != -1 && s1[i]) || (s1[i] && n == -1))
+			d1[i] = s1[i];
+		d1[i] = 0;
+		return (d1);
+	}
+	if (n != -1)
+		res = malloc(n + 1);
+	else
+	{
+		while (s2[++i])
+			;
+		res = malloc(i + 1);
+	}
+	if (n == -1)
+		return (ft_strdupcpy(res, s2, NULL, i));
+	return (ft_strdupcpy(res, s2, NULL, n));
+}
+
+void	ft_freetab(char ***ptr, int force)
+{
+	int		i;
+	int		res;
+
+	if (!*ptr)
+		return ;
+	i = -1;
+	res = 0;
+	while (!force && (*ptr)[++i] != NULL)
+	{
+		if ((*ptr)[i][0] != '\0')
+			res++;
+	}
+	if (res == 0)
+	{
+		i = -1;
+		while ((*ptr)[++i] != NULL)
+		{
+			free((*ptr)[i]);
+			(*ptr)[i] = NULL;
+		}
+		free(*ptr);
+		*ptr = NULL;
+	}
+}
+
+void	ft_strjoin(char **line, const char *s1, int size)
+{
+	char	*res;
+	int		i;
+
+	if (*line && **line)
+	{
+		i = 0;
+		while ((*line)[i])
+			i++;
+		res = malloc(size + i + 1);
 		if (res)
 		{
-			*res = 0;
-			ft_strcat(res, *line);
-			ft_strcat(res, s1);
+			ft_strdupcpy(res, *line, NULL, -1);
+			ft_strdupcpy(res + i, (char *)s1, NULL, -1);
 			free(*line);
 			*line = res;
 		}
 		return ;
 	}
-	*line = malloc(bufsize + 1);
-	if (*line)
-	{
-		**line = 0;
-		ft_strcat(*line, s1);
-	}
+	if (*line && !**line)
+		free(*line);
+	*line = ft_strdupcpy(NULL, NULL, (char *)s1, -1);
 }
 
-const char	*ft_strchr(const char *s, int c)
+int	readuntil(char **bufferline, int fd)
 {
-	char	ch;
+	char	buff[BUFFER_SIZE + 1];
+	int		byteread;
 
-	ch = (char)c;
-	while (*s && *s != ch)
-		s++;
-	if (*s == ch)
-		return (s);
-	return (NULL);
+	byteread = 1;
+	while (byteread)
+	{
+		byteread = read(fd, buff, BUFFER_SIZE);
+		if (byteread < 0)
+			return (0);
+		buff[byteread] = 0;
+		if (byteread == 0)
+			break ;
+		ft_strjoin(bufferline, buff, byteread);
+		if (ft_strchr(buff, '\n'))
+			break ;
+	}
+	return (1);
 }
