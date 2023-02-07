@@ -63,7 +63,7 @@ char	*get_next_line(int fd)
 {
 	static char	*line;
 	char		*res;
-	char		buff[BUFFER_SIZE + 1];
+	char		buff;
 	int			ret;
 
 	if (fd < 3 && fd != 0)
@@ -71,11 +71,13 @@ char	*get_next_line(int fd)
 	ret = 1;
 	while (ret)
 	{
+		buff = malloc (char) sizeof (BUFFER_SIZE + 1);
 		ret = read(fd, buff, BUFFER_SIZE);
 		if (ret < 0)
 			return (NULL);
 		buff[ret] = 0;
 		ft_strjoin(&line, buff, ret);
+		free(buff);
 		res = newline_exist(&line, 0);
 		if (res)
 			return (res);
