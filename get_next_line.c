@@ -71,7 +71,7 @@ char	*get_next_line(int fd)
 	ret = 1;
 	while (ret)
 	{
-		buff = malloc (char) sizeof (BUFFER_SIZE + 1);
+		buff = malloc(sizeof(char)*(BUFFER_SIZE + 1));
 		ret = read(fd, buff, BUFFER_SIZE);
 		if (ret < 0)
 			return (NULL);
