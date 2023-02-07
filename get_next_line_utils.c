@@ -12,64 +12,70 @@
 
 #include "get_next_line.h"
 
-size_t	ft_strlen(const char *s)
+static size_t	ft_strlen(const char *s)
 {
 	size_t	i;
 
 	i = 0;
-	while (s[i] != '\0')
+	while (s[i])
 		i++;
 	return (i);
 }
 
-static char	*ft_strcat(char *dst, const char *src)
+static void	ft_bzero(char *s, size_t n)
 {
-	char	*start;
+	size_t	i;
 
-	start = dst;
-	while (*start)
-		start++;
-	while (*src)
-		*start++ = *src++;
-	*start = 0;
-	return (dst);
+	i = 0;
+	while (i < n)
+		s[i++] = 0;
 }
 
-void	ft_strjoin(char **line, const char *s1, int bufsize)
+static char	*ft_callocs(size_t nmemb, size_t size)
 {
-	char	*res;
+	char	*buff;
 
-	if (bufsize <= 0)
-		return ;
-	if (*line)
-	{
-		res = malloc(bufsize + ft_strlen(*line) + 1);
-		if (res)
-		{
-			*res = 0;
-			ft_strcat(res, *line);
-			ft_strcat(res, s1);
-			free(*line);
-			*line = res;
-		}
-		return ;
-	}
-	*line = malloc(bufsize + 1);
-	if (*line)
-	{
-		**line = 0;
-		ft_strcat(*line, s1);
-	}
+	buff = malloc(size * nmemb);
+	if (!buff)
+		return (NULL);
+	ft_bzero(buff, (size * nmemb));
+	return (buff);
 }
 
-const char	*ft_strchr(const char *s, int c)
+static void	*ft_memcpy(void *dest, const void *src, size_t n)
 {
-	char	ch;
+	char	*dest_ptr;
+	char	*src_ptr;
+	size_t	i;
 
-	ch = (char)c;
-	while (*s && *s != ch)
-		s++;
-	if (*s == ch)
-		return (s);
-	return (NULL);
+	if (dest == NULL && src == NULL)
+		return (NULL);
+	i = 0;
+	dest_ptr = (char *)dest;
+	src_ptr = (char *)src;
+	while (i < n)
+	{
+		dest_ptr[i] = src_ptr[i];
+		i++;
+	}
+	return (dest);
+}
+
+static char	*ft_strjoins(char *s1, char *s2, size_t len)
+{
+	size_t	i;
+	char	*buff;
+
+	if (!s1)
+		s1 = ft_calloc(1, sizeof(char));
+	if (!s1 || !s2)
+		return (NULL);
+	i = ft_strlen(s1);
+	buff = malloc(sizeof(char) * (i + len + 1));
+	if (!buff)
+		return (NULL);
+	ft_memcpy(buff, s1, i);
+	ft_memcpy(buff + i, s2, (len + 1));
+	free(s1);
+	return (buff);
 }

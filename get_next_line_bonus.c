@@ -12,117 +12,104 @@
 
 #include "get_next_line_bonus.h"
 
-char	**create_buffer(char **buffer, int fd)
+char	*next_lines(char *lines)
 {
-	int		size;
+	size_t	i;
+	size_t	j;
+	char	*new_lines;
 
-	size = fd;
-	if (fd == 0)
-		size = 2;
-	buffer = malloc(sizeof(char *) * size);
-	if (buffer)
+	new_lines = NULL;
+	i = 0;
+	j = 0;
+	while (lines[i] && lines[i] != '\n')
+		i++;
+	if (lines[i])
 	{
-		buffer[--size] = 0;
-		while (--size >= 0)
+		new_lines = ft_calloc(((ft_strlen(lines) - i + 1)), sizeof(char));
+		if (!new_lines)
+			return (NULL);
+		if (lines[i] == '\n')
+		i++;
+		while (lines[i + j])
 		{
-			buffer[size] = malloc(1);
-			if (!buffer[size])
-			{
-				ft_freetab(&buffer, 1);
-				return (NULL);
-			}
-			buffer[size][0] = '\0';
+			new_lines[j] = lines[i + j];
+			j++;
 		}
 	}
-	return (buffer);
+	free(lines);
+	return (new_lines);
 }
 
-char	**pop_mem(char **src, int msize)
+char	*ft_strchr(const char *s, int c)
 {
-	char	**res;
-	int		k;
+	size_t	i;
 
-	res = malloc(sizeof(char *) * msize);
-	if (res)
+	i = 0;
+	if (c == 0)
+		return ((char *)(s) + ft_strlen(s));
+	while (s[i])
 	{
-		k = -1;
-		while (src[++k])
-			res[k] = ft_strdupcpy(NULL, NULL, src[k], -1);
-		while (k < msize - 1)
-		{
-			res[k] = ft_strdupcpy(NULL, NULL, "", -1);
-			k++;
-		}
-		res[k] = NULL;
+		if (s[i] == (char)c)
+			return ((char *)(s + i));
+		i++;
 	}
-	ft_freetab(&src, 1);
-	return (res);
+	return (NULL);
 }
 
-char	**check_line_by_fd(char **buffer, int fd)
+char	*ft_lines(char *lines, char *buffer, int ret, int fd)
 {
-	int		pos;
-
-	if (!buffer)
+	while (ret && !ft_strchr(buffer, '\n'))
 	{
-		buffer = create_buffer(buffer, fd);
-		if (!buffer)
+		ret = read(fd, buffer, BUFFER_SIZE);
+		if (ret < 0)
+			return (NULL);
+		buffer[ret] = '\0';
+		lines = ft_strjoin(lines, buffer);
+		if (!lines)
 			return (NULL);
 	}
-	pos = fd;
-	if (fd != 0)
-		pos = fd - 2;
-	if (buffer[pos] != NULL)
-		return (buffer);
-	buffer = pop_mem(buffer, fd);
-	return (buffer);
+	return (lines);
 }
 
-char	*next_line(char ***buffer, int pos)
+char	*ft_getlines(char *lines)
 {
-	char	*endl;
-	char	*tmp;
-	char	*temp;
+	size_t	i;
+	char	*new_lines;
 
-	endl = ft_strchr((*buffer)[pos], '\n');
-	if (!endl)
+	i = 0;
+	if (!*(lines))
+		return (NULL);
+	while (lines[i] && lines[i] != '\n')
+		i++;
+	new_lines = ft_calloc((i + 2), sizeof(char));
+	if (!new_lines)
+		return (NULL);
+	i = 0;
+	while (lines[i] && lines[i] != '\n')
 	{
-		tmp = NULL;
-		if ((*buffer)[pos][0])
-			tmp = ft_strdupcpy(NULL, NULL, (*buffer)[pos], -1);
-		ft_freetab(buffer, 0);
-		if (*buffer && (*buffer)[pos])
-		{
-			free((*buffer)[pos]);
-			(*buffer)[pos] = ft_strdupcpy(NULL, NULL, "", -1);
-		}
-		return (tmp);
+		new_lines[i] = lines[i];
+		i++;
 	}
-	temp = ft_strdupcpy(NULL, NULL, (*buffer)[pos], endl - (*buffer)[pos] + 1);
-	tmp = ft_strdupcpy(NULL, NULL, endl + 1, -1);
-	free((*buffer)[pos]);
-	(*buffer)[pos] = tmp;
-	return (temp);
+	if (lines[i] == '\n')
+		new_lines[i++] = '\n';
+	new_lines[i] = 0;
+	return (new_lines);
 }
 
 char	*get_next_line(int fd)
 {
-	static char		**buffer;
-	int				pos;
+	char			*buffer;
+	static char		*lines[1000];
+	char			*res;
 
-	if (fd < 3 && fd != 0)
-	{
-		ft_freetab(&buffer, 1);
+	if ((fd < 0) || BUFFER_SIZE < 1 || (read(fd, NULL, 0) < 0))
 		return (NULL);
-	}
-	buffer = check_line_by_fd(buffer, fd);
-	pos = fd;
-	if (fd != 0)
-		pos = fd - 2;
-	if (!buffer || !buffer[pos] || !readuntil(buffer + pos, fd))
-	{
-		ft_freetab(&buffer, 0);
+	buffer = ft_calloc((BUFFER_SIZE + 1), sizeof(char));
+	if (!buffer)
 		return (NULL);
-	}
-	return (next_line(&buffer, pos));
+	lines[fd] = ft_lines(lines[fd], buffer, 1, fd);
+	res = ft_getlines(lines[fd]);
+	lines[fd] = next_lines(lines[fd]);
+	free(buffer);
+	return (res);
 }

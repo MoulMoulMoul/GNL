@@ -12,110 +12,72 @@
 
 #include "get_next_line_bonus.h"
 
-char	*ft_strchr(const char *s, int c)
+size_t	ft_strlen(const char *s)
 {
-	while (*s && *s != (char)c)
-		s++;
-	if ((char)*s == (char)c)
-		return ((char *)s);
-	return (NULL);
-}
+	size_t	i;
 
-char	*ft_strdupcpy(char *d1, char *s1, char *s2, int n)
-{
-	char	*res;
-	int		i;
-
-	i = -1;
-	if (!s2)
-	{
-		while ((++i < n && n != -1 && s1[i]) || (s1[i] && n == -1))
-			d1[i] = s1[i];
-		d1[i] = 0;
-		return (d1);
-	}
-	if (n != -1)
-		res = malloc(n + 1);
-	else
-	{
-		while (s2[++i])
-			;
-		res = malloc(i + 1);
-	}
-	if (n == -1)
-		return (ft_strdupcpy(res, s2, NULL, i));
-	return (ft_strdupcpy(res, s2, NULL, n));
-}
-
-void	ft_freetab(char ***ptr, int force)
-{
-	int		i;
-	int		res;
-
-	if (!*ptr)
-		return ;
-	i = -1;
-	res = 0;
-	while (!force && (*ptr)[++i] != NULL)
-	{
-		if ((*ptr)[i][0] != '\0')
-			res++;
-	}
-	if (res == 0)
-	{
-		i = -1;
-		while ((*ptr)[++i] != NULL)
-		{
-			free((*ptr)[i]);
-			(*ptr)[i] = NULL;
-		}
-		free(*ptr);
-		*ptr = NULL;
-	}
-}
-
-void	ft_strjoin(char **line, const char *s1, int size)
-{
-	char	*res;
-	int		i;
-
-	if (*line && **line)
-	{
-		i = 0;
-		while ((*line)[i])
+	i = 0;
+	while (s[i])
 			i++;
-		res = malloc(size + i + 1);
-		if (res)
-		{
-			ft_strdupcpy(res, *line, NULL, -1);
-			ft_strdupcpy(res + i, (char *)s1, NULL, -1);
-			free(*line);
-			*line = res;
-		}
-		return ;
-	}
-	if (*line && !**line)
-		free(*line);
-	*line = ft_strdupcpy(NULL, NULL, (char *)s1, -1);
+	return (i);
 }
 
-int	readuntil(char **bufferline, int fd)
+void	ft_bzero(char *s, size_t n)
 {
-	char	buff[BUFFER_SIZE + 1];
-	int		byteread;
+	size_t	i;
 
-	byteread = 1;
-	while (byteread)
+	i = 0;
+	while (i < n)
+		s[i++] = 0;
+}
+
+char	*ft_calloc(size_t nmemb, size_t size)
+{
+	char	*buff;
+
+	buff = malloc(size * nmemb);
+	if (!buff)
+		return (NULL);
+	ft_bzero(buff, (size * nmemb));
+	return (buff);
+}
+
+void	*ft_memcpy(void *dest, const void *src, size_t n)
+{
+	char	*dest_ptr;
+	char	*src_ptr;
+	size_t	i;
+
+	if (dest == NULL && src == NULL)
+		return (NULL);
+	i = 0;
+	dest_ptr = (char *)dest;
+	src_ptr = (char *)src;
+	while (i < n)
 	{
-		byteread = read(fd, buff, BUFFER_SIZE);
-		if (byteread < 0)
-			return (0);
-		buff[byteread] = 0;
-		if (byteread == 0)
-			break ;
-		ft_strjoin(bufferline, buff, byteread);
-		if (ft_strchr(buff, '\n'))
-			break ;
+		dest_ptr[i] = src_ptr[i];
+		i++;
 	}
-	return (1);
+	return (dest);
+}
+
+char	*ft_strjoin(char *s1, char *s2)
+{
+	size_t	i;
+	size_t	j;
+	char	*buff;
+
+	if (!s1)
+		s1 = ft_calloc(1, sizeof(char));
+	if (!s1 || !s2)
+		return (NULL);
+	i = ft_strlen(s1);
+	j = ft_strlen(s2);
+	buff = malloc(sizeof(char) * (i + j + 1));
+	if (!buff)
+		return (NULL);
+	ft_memcpy(buff, s1, i);
+	ft_memcpy(buff + i, s2, (j + 1));
+	free(s1);
+	return (buff);
 }

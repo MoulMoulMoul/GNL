@@ -12,75 +12,104 @@
 
 #include "get_next_line.h"
 
-static char	*ft_strndup(const char *s1, int len)
+char	*next_lines(char *lines)
 {
-	char	*res;
-	int		size;
-	int		i;
+	size_t	i;
+	size_t	j;
+	char	*new_lines;
 
-	size = len;
-	if (size == -1)
-		size = ft_strlen(s1);
-	res = malloc(size + 1);
-	if (!res)
-		return (res);
-	i = -1;
-	while (s1[++i] && i < size)
-		res[i] = s1[i];
-	res[i] = 0;
-	return (res);
+	new_lines = NULL;
+	i = 0;
+	j = 0;
+	while (lines[i] && lines[i] != '\n')
+		i++;
+	if (lines[i])
+	{
+		new_lines = ft_callocs(((ft_strlen(lines) - i + 1)), sizeof(char));
+		if (!new_lines)
+			return (NULL);
+		if (lines[i] == '\n')
+			i++;
+		while (lines[i + j])
+		{
+			new_lines[j] = lines[i + j];
+			j++;
+		}
+	}
+	free(lines);
+	return (new_lines);
 }
 
-char	*newline_exist(char **line, int lastline)
+char	*ft_strchr(const char *s, int c)
 {
-	const char	*endl;
-	char		*res;
-	char		*tmp;
+	size_t	i;
 
-	if (!*line)
-		return (*line);
-	tmp = NULL;
-	endl = ft_strchr(*line, '\n');
-	if (endl && !lastline)
+	i = 0;
+	if (!c)
+		return ((char *)(s) + ft_strlen(s));
+	while (s[i])
 	{
-		tmp = ft_strndup(endl + 1, -1);
-		res = ft_strndup(*line, (endl - *line) + 1);
-		free(*line);
-		*line = tmp;
-		return (res);
+		if (s[i] == (char)c)
+			return ((char *)(s + i));
+		i++;
 	}
-	if (lastline && **line && !endl)
-		tmp = ft_strndup(*line, -1);
-	if (tmp || (*line && !**line))
+	return (NULL);
+}
+
+char	*ft_lines(char *lines, char *buffer, int ret, int fd)
+{
+	while (ret && !ft_strchr(buffer, '\n'))
 	{
-		free(*line);
-		*line = NULL;
+		ret = read(fd, buffer, BUFFER_SIZE);
+		if (ret < 0)
+			return (NULL);
+		buffer[ret] = '\0';
+		lines = ft_strjoins(lines, buffer, ret);
+		if (!lines)
+			return (NULL);
 	}
-	return (tmp);
+	return (lines);
+}
+
+char	*ft_getlines(char *lines)
+{
+	size_t	i;
+	char	*new_lines;
+
+	i = 0;
+	if (!(*lines))
+		return (NULL);
+	while (lines[i] && lines[i] != '\n')
+		i++;
+	new_lines = ft_callocs((i + 2), sizeof(char));
+	if (!new_lines)
+		return (NULL);
+	i = 0;
+	while (lines[i] && lines[i] != '\n')
+	{
+		new_lines[i] = lines[i];
+		i++;
+	}
+	if (lines[i] == '\n')
+		new_lines[i++] = '\n';
+	new_lines[i] = 0;
+	return (new_lines);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*line;
+	char		*buffer;
+	static char	*lines;
 	char		*res;
-	char		buff;
-	int			ret;
 
-	if (fd < 3 && fd != 0)
+	if (fd < 0 || BUFFER_SIZE < 1 || read(fd, NULL, 0) < 0)
 		return (NULL);
-	ret = 1;
-	while (ret)
-	{
-		buff = malloc(sizeof(char)*(BUFFER_SIZE + 1));
-		ret = read(fd, buff, BUFFER_SIZE);
-		if (ret < 0)
-			return (NULL);
-		buff[ret] = 0;
-		ft_strjoin(&line, buff, ret);
-		free(buff);
-		res = newline_exist(&line, 0);
-		if (res)
-			return (res);
-	}
-	return (newline_exist(&line, 1));
+	buffer = ft_callocs((BUFFER_SIZE + 1), sizeof(char));
+	if (!buffer)
+		return (NULL);
+	lines = ft_lines(lines, buffer, 1, fd);
+	res = ft_getlines(lines);
+	lines = next_lines(lines);
+	free(buffer);
+	return (res);
 }
