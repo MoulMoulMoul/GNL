@@ -1,12 +1,19 @@
 #ifndef GET_NEXT_LINE_BONUS_H
 # define GET_NEXT_LINE_BONUS_H
 
-# include <unistd.h>
 # include <stdlib.h>
-# include <fcntl.h>
+# include <unistd.h>
 
-size_t	ft_strlen(const char *s);
-char	*ft_calloc(size_t nmemb, size_t size);
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 42
+# endif
+
 char	*get_next_line(int fd);
-char	*ft_strjoin(char *s1, char *s2);
+char	*ft_get_line(char *buffer);
+char	*ft_strjoin(char *buffer, char *str);
+char	*ft_read_next_buffer(char *buffer);
+size_t	ft_strlen(char *str);
+char	*ft_read_buffer(int fd, char *buffer);
+char	*ft_strchr(char *s, int c);
+
 #endif
